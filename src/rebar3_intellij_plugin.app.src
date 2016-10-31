@@ -1,0 +1,12 @@
+{application, rebar3_intellij_plugin,
+ [{description, "A rebar plugin"}
+ ,{vsn, "0.2.0"}
+ ,{registered, []}
+ ,{applications, [kernel, stdlib, intellij]}
+ ,{env,[]}
+ ,{modules, []}
+
+ ,{contributors, ["Bryan Hunt"]}
+ ,{licenses, ["MIT"]}
+ ,{links, [{"Github", "https://github.com/binarytemple/rebar3_intellij_plugin"}]}
+ ]}.
