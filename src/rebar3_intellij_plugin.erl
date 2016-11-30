@@ -38,7 +38,7 @@
          do/1,
          format_error/1]).
 
--define(PROVIDER, compile).
+-define(PROVIDER, generate).
 -define(DEPS, [{default, compile}]).
 
 %% ===================================================================
@@ -55,7 +55,14 @@ init(State) ->
                                                                {example, "rebar3 intellij compile"},
                                                                {short_desc, "generate intellij config files."},
                                                                {desc, "generate intellij config files."},
-                                                               {opts, []}])),
+                                                               {opts, [intellij]}])),
+
+file:write_file("/tmp/state.txt",[io_lib:format("~p",[State1])]),
+file:write_file("/tmp/tag.txt",  [io_lib:format("~p",[os:timestamp()])]),
+file:write_file("/tmp/deps.txt", [io_lib:format("~p",[rebar_state:code_paths(State1, all_plugin_deps)])]),
+file:write_file("/tmp/args.txt", [io_lib:format("~p",[rebar_state:command_parsed_args(State1)])]),
+file:write_file("/tmp/apps.txt", [io_lib:format("~p",[rebar_state:project_apps(State1)])]),
+%%file:write_file("/tmp/dir.txt",  [io_lib:format("~p",[rebar_dir:recursive(rebar_state:opts(State1,"foo"))])]),
     {ok, State1}.
 
 do(State) ->
