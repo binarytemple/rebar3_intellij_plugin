@@ -39,12 +39,14 @@
   format_error/1]).
 
 -define(PROVIDER, generate).
--define(DEPS, [{default,
+-define(DEPS, [{
 
+%%  compile,        default,
+  app_discovery
 
-  app_discover, lock,
+  %% , lock
 
-  compile}]).
+}]).
 
 %% ===================================================================
 %% Public API
@@ -62,20 +64,37 @@ init(State) ->
     {desc, "generate intellij config files."},
     {opts, [intellij]}])),
 
-  file:write_file("/tmp/state.txt", [io_lib:format("~p", [State1])]),
-  file:write_file("/tmp/tag.txt", [io_lib:format("~p", [os:timestamp()])]),
-  file:write_file("/tmp/deps.txt", [io_lib:format("~p", [rebar_state:code_paths(State1, all_plugin_deps)])]),
-  file:write_file("/tmp/args.txt", [io_lib:format("~p", [rebar_state:command_parsed_args(State1)])]),
+
+%%file:write_file("/tmp/dir.txt",  [io_lib:format("~p",[rebar_dir:recursive(rebar_state:opts(State1,"foo"))])]),
+  {ok, State1}.
+
+do(State1) ->
+  rebar_api:info("Running intellij...", []),
+
+  rebar_file_utils:write_file_if_contents_differ("/tmp/state.txt", [io_lib:format("~p", [State1])]),
+  rebar_file_utils:write_file_if_contents_differ("/tmp/tag.txt", [io_lib:format("~p", [os:timestamp()])]),
+  rebar_file_utils:write_file_if_contents_differ("/tmp/deps.txt", [io_lib:format("~p", [rebar_state:code_paths(State1, all_plugin_deps)])]),
+  rebar_file_utils:write_file_if_contents_differ("/tmp/args.txt", [io_lib:format("~p", [rebar_state:command_parsed_args(State1)])]),
 %% file:write_file("/tmp/apps.txt", [io_lib:format("~p",[rebar_state:project_apps(State1)])]),
-%%file:write_file("/tmp/deps.txt", [io_lib:format("~p",[rebar_state:code_paths (State1)])]),
+
+  rebar_file_utils:write_file_if_contents_differ("/tmp/bstate.txt", [term_to_binary(State1)]),
+
+  rebar_file_utils:write_file_if_contents_differ("/tmp/dir.txt",
+    [io_lib:format("~p", [
+      {
+        {all_src_dirs, rebar_dir:all_src_dirs(rebar_state:opts(State1))} ,
+        {checkouts_dir, rebar_dir:checkouts_dir(State1)} ,
+{deps_dir, rebar_state:all_deps(State1)}
+      }
+    ])]),
+
   Apps = case rebar_state:current_app(State1) of
            undefined ->
              rebar_state:project_apps(State1);
            AppInfo ->
              [AppInfo]
          end,
-  file:write_file("/tmp/apps.txt", [io_lib:format("~p", [Apps])]),
-
+  rebar_file_utils:write_file_if_contents_differ("/tmp/apps.txt", [io_lib:format("~p", [Apps])]),
 
   Res = [begin
            Opts = rebar_app_info:opts(AppInfo),
@@ -94,15 +113,9 @@ init(State) ->
              {app_config_files, RebarConfigFiles}
            ]
          end || AppInfo <- Apps],
-  file:write_file("/tmp/res.txt", [io_lib:format("~p", [Res])]),
+  rebar_file_utils:write_file_if_contents_differ("/tmp/res.txt", [io_lib:format("~p", [Res])]),
 
-
-%%file:write_file("/tmp/dir.txt",  [io_lib:format("~p",[rebar_dir:recursive(rebar_state:opts(State1,"foo"))])]),
   {ok, State1}.
-
-do(State) ->
-  rebar_api:info("Running intellij...", []),
-  {ok, State}.
 
 -spec format_error(any()) -> iolist().
 format_error(Reason) ->
