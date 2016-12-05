@@ -113,9 +113,27 @@ do(State1) ->
              {app_config_files, RebarConfigFiles}
            ]
          end || AppInfo <- Apps],
+
   rebar_file_utils:write_file_if_contents_differ("/tmp/res.txt", [io_lib:format("~p", [Res])]),
+  rebar_file_utils:write_file_if_contents_differ("/tmp/bres.txt", term_to_binary(Res)),
+
+  rebar_api:warn("root : ~p", [  rebar_dir:root_dir(State1) ]),
+  rebar_api:warn("processing base dir: ~p", [maybe_make_idea_dir(   rebar_dir:root_dir(State1))]),
+
+
+
+  HrlDirs = [ D || D <- lists:usort ( [ filename:dirname(F) || F <- proplists:get_value(hrl_files, C) ] ), lists:suffix("include",D) ].
+
 
   {ok, State1}.
+
+maybe_make_idea_dir(RootDir) ->
+ Target =  filename:join(RootDir, ".idea.tmp") ,
+ case filelib:is_dir(Target) of
+  true -> ok;
+ false -> file:make_dir(Target)
+end
+.
 
 -spec format_error(any()) -> iolist().
 format_error(Reason) ->
