@@ -122,7 +122,6 @@ do(State1) ->
 
 
 
-  HrlDirs = [ D || D <- lists:usort ( [ filename:dirname(F) || F <- proplists:get_value(hrl_files, C) ] ), lists:suffix("include",D) ].
 
 
   {ok, State1}.
